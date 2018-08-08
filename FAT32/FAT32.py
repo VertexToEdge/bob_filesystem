@@ -48,7 +48,7 @@ for i in range(16*SectorPerCluster):
         LFN[0] = hex2str( LFN[0],"utf-16-le").replace("\uffff","")
     elif EntryAttr != 0x00:
         FileName = "?" + hex2str(bin2hex(DirEntry[2:8]), "euc-kr") if DirEntry[0] == 0xe5 else hex2str(bin2hex(DirEntry[0:8]), "euc-kr")
-
+        FileName = FileName.strip()
         if DirEntry[0]==0xe5:
             print("[지워짐]",end="")
         if EntryAttr & 0x10:
@@ -56,6 +56,8 @@ for i in range(16*SectorPerCluster):
         if EntryAttr & 0x20:
             print("[파일]", end="")
             FileName = FileName.strip() + "." + hex2str(bin2hex(DirEntry[8:11]), "euc-kr")
+            filesize = struct.unpack_from("<I",DirEntry,28)[0]
+            print("[파일사이즈:%d]"%(filesize),end="")
 
         LongName = ''.join(LFN)
         FileName = FileName if len(FileName[2:-2]) > len(LongName) else LongName
@@ -71,6 +73,10 @@ for i in range(16*SectorPerCluster):
             print("[운영체제]",end="")
         if EntryAttr & 0x08:
             print("[볼륨레이블]",end="")
+        
+        FChigh = struct.unpack_from("<H",DirEntry,20)[0]*256
+        FClow = struct.unpack_from("<H",DirEntry,26)[0]
+        print("[시작 클러스터 : %s]"%(FChigh+FClow))
         LFN=[]
         print("\n")
     else:
